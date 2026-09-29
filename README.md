@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
+<style id="site-css">
 @property --ang{ syntax:'<angle>'; inherits:false; initial-value:0deg; }
 
 /* ================= TOKENS ================= */
@@ -296,6 +296,7 @@ section{ position:relative; padding:clamp(100px, 12vw, 160px) 0; }
 .code-bar i:nth-child(1){ background:#FF5F57; } .code-bar i:nth-child(2){ background:#FEBC2E; } .code-bar i:nth-child(3){ background:#28C840; }
 .code-bar span{ margin-left:10px; font-family:var(--mono); font-size:.78rem; color:var(--muted); transition:opacity .3s; }
 .code-body{ position:relative; min-height:490px; overflow:hidden; border-radius:0 0 22px 22px; }
+.code-win .code-body pre{ background:transparent; border:0; border-radius:0; }
 .code-body pre{ --gw:2em; --pv:20px; --ph:18px; position:absolute; inset:0; margin:0; padding:var(--pv) var(--ph); overflow:auto; font-family:var(--mono); font-size:.79rem; line-height:1.75; color:#D6D6DA; counter-reset:ln; pointer-events:none; }
 .code-body pre.wide{ --gw:3.1em; }
 .code-body pre.on{ pointer-events:auto; }
@@ -516,7 +517,7 @@ footer .wrap{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:1
   <div class="scroll-cue" aria-hidden="true"></div>
 </header>
 
-<main>
+<main id="site-main">
 <!-- FEATURED MAPS -->
 <section id="maps">
   <div class="wrap">
@@ -628,7 +629,7 @@ footer .wrap{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:1
 </section>
 </main>
 
-<footer><div class="wrap"><span>© 2026 hrkurdish</span><span>Not affiliated with or endorsed by Epic Games.</span></div></footer>
+<footer id="site-footer"><div class="wrap"><span>© 2026 hrkurdish</span><span>Not affiliated with or endorsed by Epic Games.</span></div></footer>
 
 <!-- Work with me: Discord sheet -->
 <dialog class="modal" id="work" aria-labelledby="workTitle">
@@ -788,6 +789,29 @@ reboot_controller := class(creative_device):
     OnTimerEnd(MaybeAgent : ?agent) : void = SetVans(false)
     OnStop(Agent : agent) : void = RebootsTimer.Pause(Agent)` }
 ];
+
+/* ---------- self-repair: if a host (like a GitHub Pages theme) wraps this page in its own layout,
+   move the site back out, drop the host's styles and restore full-screen layout ---------- */
+(function rescueFromHostLayout(){
+  const nav = document.getElementById("nav");
+  if (!nav || nav.parentElement === document.body) return;
+  const keep = ["loader", "nav", "top", "site-main", "site-footer", "work", "toast"]
+    .map(id => document.getElementById(id)).filter(Boolean);
+  const css = document.getElementById("site-css");
+  if (css) document.head.appendChild(css);
+  document.querySelectorAll('link[href*="fonts.googleapis.com"], link[href*="fonts.gstatic.com"]').forEach(l => document.head.appendChild(l));
+  document.querySelectorAll('link[rel~="stylesheet"]').forEach(l => { if (!/fonts\.googleapis\.com/.test(l.href)) l.remove(); });
+  document.querySelectorAll("style").forEach(st => { if (st.id !== "site-css") st.remove(); });
+  if (!document.querySelector('meta[name="viewport"]')){
+    const m = document.createElement("meta"); m.name = "viewport"; m.content = "width=device-width, initial-scale=1, viewport-fit=cover"; document.head.appendChild(m);
+  }
+  const scripts = [...document.querySelectorAll("body script")];
+  document.body.replaceChildren(...keep, ...scripts);
+  document.body.removeAttribute("class");
+  document.documentElement.removeAttribute("class");
+  document.title = "hrkurdish | UEFN Creator and Verse Developer";
+  window.scrollTo(0, 0);
+})();
 
 /* ---------- helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
